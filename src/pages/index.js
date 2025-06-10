@@ -1,3 +1,6 @@
+  import StockTracker from '../StockTracker';
+  import RestockHistory from '../RestockHistory';
+
 export default function Home() {
   return (
     <div style={{ fontFamily: 'sans-serif', padding: '40px', textAlign: 'center' }}>
@@ -13,9 +16,19 @@ export default function Home() {
           <li>📊 Intuitive Dashboards</li>
           <li>🔄 Easy Product Management</li>
         </ul>
+
+
       </div>
+      
 
       <hr style={{ margin: '40px 0', borderColor: '#ccc' }} />
+
+            <StockTracker />
+            <RestockHistory />
+
+
+
+
 
       <footer style={{ fontSize: '1rem', color: '#888' }}>
         <p>Crafted with ❤️ by Glaritta Christella</p>
@@ -23,3 +36,8 @@ export default function Home() {
     </div>
   );
 }
+
+
+
+
+ 
