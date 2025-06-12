@@ -1,38 +1,28 @@
-import axios from 'axios';
+
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export default async function handler(req, res) {
-  if (req.method === 'POST') {
-    const { prompt } = req.body;
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Only POST method is allowed" });
+  }
 
-    // Debug log to confirm env variable is loaded
-    console.log("🔑 OPENAI_API_KEY is", process.env.OPENAI_API_KEY ? "SET ✅" : "NOT SET ❌");
+  const { prompt } = req.body;
 
-    try {
-      const response = await axios.post(
-        'https://api.openai.com/v1/chat/completions',
-        {
-          model: 'gpt-3.5-turbo',
-          messages: [{ role: 'user', content: prompt }],
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-          },
-        }
-      );
+  if (!prompt) {
+    return res.status(400).json({ error: "Prompt is required" });
+  }
 
-      const answer = response.data.choices[0].message.content;
-      res.status(200).json({ answer });
-    } catch (error) {
-      console.error('🔥 ERROR CALLING OPENAI:', {
-        message: error.message,
-        data: error.response?.data,
-        status: error.response?.status,
-      });
-      res.status(500).json({ answer: 'Something went wrong. Please try again.' });
-    }
-  } else {
-    res.status(405).json({ message: 'Only POST requests allowed' });
+  try {
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+
+    res.status(200).json({ reply: text });
+  } catch (error) {
+    console.error("Gemini API Error:", error);
+    res.status(500).json({ error: "Failed to generate response from Gemini" });
   }
 }
