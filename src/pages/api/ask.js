@@ -1,28 +1,24 @@
-
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import axios from 'axios';
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Only POST method is allowed" });
-  }
-
-  const { prompt } = req.body;
-
-  if (!prompt) {
-    return res.status(400).json({ error: "Prompt is required" });
-  }
+  const { question } = req.body; // Change 'prompt' to 'question'
 
   try {
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const response = await axios.post(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      {
+        contents: [
+          {
+            parts: [{ text: question }], // Use 'question' here
+          },
+        ],
+      }
+    );
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
-
-    res.status(200).json({ reply: text });
+    const geminiText = response.data.candidates?.[0]?.content?.parts?.[0]?.text || "No response from Gemini";
+    res.status(200).json({ answer: geminiText }); // Return as 'answer'
   } catch (error) {
-    console.error("Gemini API Error:", error);
-    res.status(500).json({ error: "Failed to generate response from Gemini" });
+    console.error("🔥 ERROR CALLING GEMINI:", error.response?.data || error.message);
+    res.status(500).json({ error: "Gemini API call failed" });
   }
 }
