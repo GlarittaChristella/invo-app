@@ -13,6 +13,8 @@ export default function Chat() {
       setResponse('Something went wrong. Please try again.');
     }
   };
+  // Temp comment to force redeploy
+
 
   return (
     <div style={{ fontFamily: 'Arial', padding: '40px', textAlign: 'center' }}>
