@@ -17,7 +17,7 @@ export default async function handler(req, res) {
             Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
           },
         }
-      );
+      ); 
 
       const answer = response.data.choices[0].message.content;
       res.status(200).json({ answer });
