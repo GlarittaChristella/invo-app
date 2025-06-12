@@ -1,4 +1,6 @@
-  import StockTracker from '../StockTracker';
+ import Link from 'next/link';
+
+ import StockTracker from '../StockTracker';
   import RestockHistory from '../RestockHistory';
 
 export default function Home() {
@@ -26,6 +28,13 @@ export default function Home() {
             <StockTracker />
             <RestockHistory />
 
+               <div style={{ marginTop: '30px' }}>
+        <Link href="/chat">
+          <button style={{ backgroundColor: '#27ae60', color: 'white', padding: '12px 24px', fontSize: '1rem', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>
+            🤖 AI Assistant Chat
+          </button>
+        </Link>
+      </div>
 
 
 
