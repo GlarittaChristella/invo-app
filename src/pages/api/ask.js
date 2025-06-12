@@ -2,14 +2,14 @@ import axios from 'axios';
 
 export default async function handler(req, res) {
   if (req.method === 'POST') {
-    const { question } = req.body;
+    const { prompt } = req.body;
 
     try {
       const response = await axios.post(
         'https://api.openai.com/v1/chat/completions',
         {
           model: 'gpt-3.5-turbo',
-          messages: [{ role: 'user', content: question }],
+          messages: [{ role: 'user', content: prompt }], // ✅ FIXED
         },
         {
           headers: {
@@ -29,3 +29,4 @@ export default async function handler(req, res) {
     res.status(405).json({ message: 'Only POST requests allowed' });
   }
 }
+
