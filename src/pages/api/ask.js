@@ -12,31 +12,25 @@ export default async function handler(req, res) {
 
   try {
     const response = await axios.post(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
-        contents: [
-          {
-            parts: [
-              {
-                text: question
-              }
-            ]
-          }
-        ]
+        contents: [{ parts: [{ text: question }] }],
+        generationConfig: {
+          temperature: 0.7,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 512
+        }
       }
     );
 
-    const geminiText = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || "No response from Gemini";
-    console.log("📤 Gemini Response:", geminiText);
-    res.status(200).json({ answer: geminiText });
+    const text = response.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    console.log("📤 Gemini Response:", text);
     
+    res.status(200).json({ answer: text || "No response from Gemini" });
   } catch (error) {
-    const status = error.response?.status || 500;
-    const message = error.response?.data?.error?.message || error.message;
-    console.error("🔥 Gemini API Error:", message);
-    res.status(status).json({ error: `Gemini Error: ${message}` });
+    console.error("🔥 Gemini API Error:", error.response?.data || error.message);
+    res.status(500).json({ error: "Gemini API call failed" });
   }
 }
-
-
 
