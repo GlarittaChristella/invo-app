@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
-import { db } from './firebase';
+import { db } from '../firebase'; // ✅ Corrected path
 
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -23,18 +23,15 @@ export default function Analytics() {
     fetchProducts();
   }, []);
 
-  // 🔹 Generate simulated monthly usage
   const monthlyUsage = products.map(p => ({
     name: p.name,
-    usage: Math.floor(p.quantity * Math.random() * 3) || 1, // avoid zero usage
+    usage: Math.floor(p.quantity * Math.random() * 3) || 1,
   }));
 
-  // 🔹 Top used products
   const topUsed = [...monthlyUsage]
     .sort((a, b) => b.usage - a.usage)
     .slice(0, 5);
 
-  // 🔹 Low stock items
   const lowStock = products
     .filter(p => p.quantity < 10)
     .map(p => ({ name: p.name, qty: p.quantity }));
@@ -48,7 +45,6 @@ export default function Analytics() {
       </h2>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px' }}>
-        {/* 📅 Monthly Usage Chart */}
         <div>
           <h3>📅 Monthly Usage (Demo)</h3>
           <ResponsiveContainer width="100%" height={300}>
@@ -61,7 +57,6 @@ export default function Analytics() {
           </ResponsiveContainer>
         </div>
 
-        {/* 🔥 Top Used Products (Pie) */}
         <div>
           <h3>🔥 Top Used Products</h3>
           <ResponsiveContainer width="100%" height={300}>
@@ -86,7 +81,6 @@ export default function Analytics() {
         </div>
       </div>
 
-      {/* ⚠️ Low Stock Alert Graph */}
       <div style={{ marginTop: '50px' }}>
         <h3>⚠️ Low Stock Items</h3>
         <ResponsiveContainer width="100%" height={250}>
