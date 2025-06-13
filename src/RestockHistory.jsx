@@ -1,72 +1,79 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { collection, addDoc, getDocs } from 'firebase/firestore';
+import { db } from './firebase';
 
-const RestockHistory = () => {
-  const [history, setHistory] = useState([
-    { date: '2025-06-01', item: 'Sugar', quantity: 30 },
-    { date: '2025-06-08', item: 'Milk Powder', quantity: 15 },
-  ]);
+export default function RestockHistory() {
+  const [date, setDate] = useState('');
+  const [item, setItem] = useState('');
+  const [quantity, setQuantity] = useState('');
+  const [history, setHistory] = useState([]);
 
-  const [newItem, setNewItem] = useState('');
-  const [newQuantity, setNewQuantity] = useState('');
-  const [newDate, setNewDate] = useState('');
+  const fetchHistory = async () => {
+    const querySnapshot = await getDocs(collection(db, "restockHistory"));
+    const records = [];
+    querySnapshot.forEach((doc) => {
+      records.push(doc.data());
+    });
+    setHistory(records);
+  };
 
   useEffect(() => {
-    console.log(`📝 Total restock events: ${history.length}`);
-  }, [history]);
+    fetchHistory();
+  }, []);
 
-  const handleAdd = (e) => {
-    e.preventDefault();
-    if (newItem && newQuantity && newDate) {
-      const newEntry = {
-        date: newDate,
-        item: newItem,
-        quantity: parseInt(newQuantity),
-      };
-      setHistory([...history, newEntry]);
-      setNewItem('');
-      setNewQuantity('');
-      setNewDate('');
+  const handleAddEntry = async () => {
+    if (!date || !item || !quantity) {
+      alert("Please fill all fields.");
+      return;
+    }
+
+    try {
+      await addDoc(collection(db, "restockHistory"), {
+        date,
+        item,
+        quantity: Number(quantity),
+      });
+      setDate('');
+      setItem('');
+      setQuantity('');
+      fetchHistory(); // Refresh
+    } catch (error) {
+      console.error("Error adding restock entry:", error);
     }
   };
 
   return (
-    <div style={{ border: '2px dashed #888', padding: '1rem', margin: '1rem' }}>
+    <div style={{ marginTop: '40px' }}>
       <h2>📜 Restock History</h2>
 
-      <form onSubmit={handleAdd} style={{ marginBottom: '1rem' }}>
-        <label>
-          📅 Date:{' '}
-          <input
-            type="date"
-            value={newDate}
-            onChange={(e) => setNewDate(e.target.value)}
-            required
-          />
-        </label>{' '}
-        <label>
-          📦 Item:{' '}
-          <input
-            type="text"
-            placeholder="Enter item"
-            value={newItem}
-            onChange={(e) => setNewItem(e.target.value)}
-            required
-          />
-        </label>{' '}
-        <label>
-          🔢 Quantity:{' '}
-          <input
-            type="number"
-            placeholder="Enter quantity"
-            value={newQuantity}
-            onChange={(e) => setNewQuantity(e.target.value)}
-            required
-          />
-        </label>{' '}
-        <button type="submit">➕ Add Entry</button>
-      </form>
+      <div>
+        <input
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          placeholder="📅 Date"
+          style={{ margin: '5px', padding: '5px' }}
+        />
+        <input
+          type="text"
+          value={item}
+          onChange={(e) => setItem(e.target.value)}
+          placeholder="📦 Item"
+          style={{ margin: '5px', padding: '5px' }}
+        />
+        <input
+          type="number"
+          value={quantity}
+          onChange={(e) => setQuantity(e.target.value)}
+          placeholder="🔢 Quantity"
+          style={{ margin: '5px', padding: '5px' }}
+        />
+        <button onClick={handleAddEntry} style={{ padding: '6px 12px', margin: '5px' }}>
+          ➕ Add Entry
+        </button>
+      </div>
 
-      <table border="1" cellPadding="6">
+      <table style={{ marginTop: '20px', width: '100%', textAlign: 'left' }}>
         <thead>
           <tr>
             <th>Date</th>
@@ -75,17 +82,15 @@ const RestockHistory = () => {
           </tr>
         </thead>
         <tbody>
-          {history.map((h, i) => (
-            <tr key={i}>
-              <td>{h.date}</td>
-              <td>{h.item}</td>
-              <td>{h.quantity}</td>
+          {history.map((entry, index) => (
+            <tr key={index}>
+              <td>{entry.date}</td>
+              <td>{entry.item}</td>
+              <td>{entry.quantity}</td>
             </tr>
           ))}
         </tbody>
       </table>
     </div>
   );
-};
-
-export default RestockHistory;
+}
