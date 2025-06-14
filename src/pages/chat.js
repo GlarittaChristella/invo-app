@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { db } from '../firebase';
-import { addDoc, collection, getDocs } from 'firebase/firestore';
+import { addDoc, collection } from 'firebase/firestore';
+import ChatHistory from './ChatHistory';
 
 export default function ChatPage() {
   const [question, setQuestion] = useState('');
   const [response, setResponse] = useState('');
   const [loading, setLoading] = useState(false);
-  const [history, setHistory] = useState([]);
 
   const responseRef = useRef(null);
 
@@ -18,16 +18,6 @@ export default function ChatPage() {
       createdAt: new Date()
     });
   };
-
-  // 🔵 Load chat history on page load
-  useEffect(() => {
-    const fetchHistory = async () => {
-      const snapshot = await getDocs(collection(db, 'chatHistory'));
-      const data = snapshot.docs.map(doc => doc.data());
-      setHistory(data);
-    };
-    fetchHistory();
-  }, []);
 
   const handleAsk = async () => {
     if (!question.trim()) return;
@@ -99,18 +89,9 @@ export default function ChatPage() {
         )}
       </div>
 
-      {/* 🔁 Chat History Display */}
-      <div className="w-full max-w-xl mt-8">
-        <h2 className="text-xl font-semibold mb-2">🕘 Previous Questions</h2>
-        <ul className="bg-white shadow p-4 rounded-md space-y-2 max-h-60 overflow-auto">
-          {history.map((entry, index) => (
-            <li key={index} className="border-b pb-2">
-              <strong>Q:</strong> {entry.question}
-              <br />
-              <strong>A:</strong> {entry.answer}
-            </li>
-          ))}
-        </ul>
+      {/* 🔁 Modular Chat History Display */}
+      <div className="w-full max-w-xl mt-10">
+        <ChatHistory />
       </div>
     </div>
   );
