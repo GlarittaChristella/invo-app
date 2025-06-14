@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export default function ChatPage() {
   const [question, setQuestion] = useState('');
   const [response, setResponse] = useState('');
   const [loading, setLoading] = useState(false);
+  const responseRef = useRef(null);
 
   const handleAsk = async () => {
     if (!question.trim()) return;
@@ -21,22 +22,34 @@ export default function ChatPage() {
       setResponse(data.answer || 'No answer from AI.');
     } catch (err) {
       console.error('Client error:', err);
-      setResponse('Something went wrong. Please try again.');
+      setResponse('⚠️ Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
-      <h1 className="text-3xl font-bold mb-4 text-center">Smart Inventory AI Assistant</h1>
-      <p className="text-gray-600 mb-6 text-center">Type your inventory-related question below and get instant AI help!</p>
+  useEffect(() => {
+    if (responseRef.current) {
+      responseRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [response]);
 
-      <div className="w-full max-w-xl bg-white p-6 rounded-xl shadow-md">
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-6">
+      <h1 className="text-3xl font-bold text-center mb-2">🤖 Smart Inventory AI Assistant</h1>
+      <p className="text-gray-600 text-center mb-6">
+        Ask your inventory questions and get instant AI help!
+      </p>
+
+      <div className="w-full max-w-xl bg-white p-6 rounded-xl shadow-lg">
+        <label htmlFor="question" className="block text-sm font-medium text-gray-700 mb-2">
+          Your Question
+        </label>
         <textarea
-          className="w-full border border-gray-300 p-3 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-400"
+          id="question"
           rows={4}
-          placeholder="Ask a question like 'How do I reorder low stock items?'"
+          className="w-full border border-gray-300 p-3 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-400"
+          placeholder="E.g., How to track low stock items?"
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
         />
@@ -50,8 +63,8 @@ export default function ChatPage() {
         </button>
 
         {response && (
-          <div className="mt-6">
-            <h2 className="font-semibold text-lg mb-2 text-gray-700">AI Response:</h2>
+          <div ref={responseRef} className="mt-6">
+            <h2 className="font-semibold text-lg text-gray-700 mb-2">AI Response:</h2>
             <div className="bg-gray-50 border border-gray-300 p-4 rounded-md text-gray-800 whitespace-pre-line">
               {response}
             </div>
