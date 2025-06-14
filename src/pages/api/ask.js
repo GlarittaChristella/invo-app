@@ -10,11 +10,35 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "Missing GEMINI_API_KEY" });
   }
 
+  // 🧠 Sample Inventory Data (You can fetch this from Firestore in the future)
+  const inventory = [
+    { name: "Rice Bag", quantity: 5, price: 44 },
+    { name: "Milk Powder", quantity: 56, price: null },
+    { name: "Wheat Flour", quantity: 10, price: 52 },
+    { name: "Oil Tin", quantity: 20, price: 120 },
+  ];
+
+  // ✨ Contextual Suggestions
+  let suggestions = [];
+
+  inventory.forEach(item => {
+    if (item.quantity < 10) {
+      suggestions.push(`⚠️ ${item.name} is low on stock. Consider reordering.`);
+    }
+    if (!item.price) {
+      suggestions.push(`💡 Please add price info for ${item.name}.`);
+    }
+  });
+
+  const suggestionText = suggestions.length > 0
+    ? `Before answering, note:\n${suggestions.join("\n")}\n\nNow answer this:\n${question}`
+    : question;
+
   try {
     const response = await axios.post(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
-        contents: [{ parts: [{ text: question }] }],
+        contents: [{ parts: [{ text: suggestionText }] }],
         generationConfig: {
           temperature: 0.7,
           topK: 40,

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { useEffect } from 'react';
 import { app, analytics } from '../firebase';
+import AnalyticsSnapshot from '../components/AnalyticsSnapshot';
 
 import ProductList from '../ProductList';
 import AddProductForm from '../AddProductForm'; // Make sure you created this component
@@ -22,6 +23,10 @@ export default function Home() {
       <p style={{ fontSize: '1.2rem', color: '#555' }}>
         Your smart inventory management solution for small and medium businesses.
       </p>
+      <div>
+      <AnalyticsSnapshot />
+      </div>
+
 
       <div style={{ marginTop: '30px' }}>
         <ul style={{ listStyleType: 'none', padding: 0, fontSize: '1.1rem' }}>
