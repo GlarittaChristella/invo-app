@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { db } from '../firebase';
 import { addDoc, collection } from 'firebase/firestore';
-import ChatHistory from './ChatHistory';
+import ChatHistory from '../components/ChatHistory';
 
 export default function ChatPage() {
   const [question, setQuestion] = useState('');
