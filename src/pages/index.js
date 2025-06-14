@@ -18,6 +18,7 @@ export default function Home() {
   return (
     <div style={{ fontFamily: 'sans-serif', padding: '40px', textAlign: 'center' }}>
       <h1 style={{ fontSize: '3rem', color: '#2c3e50' }}>Welcome to Invo-App</h1>
+      <h1 className="text-4xl font-bold text-blue-600">Tailwind Working!</h1>
       <p style={{ fontSize: '1.2rem', color: '#555' }}>
         Your smart inventory management solution for small and medium businesses.
       </p>

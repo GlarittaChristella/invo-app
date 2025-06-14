@@ -1,3 +1,4 @@
+import { Analytics } from '@vercel/analytics/react';
 import "../src/styles/globals.css"; // ✅ correct relative path
 import Navbar from '../components/Navbar';  
 export default function App({ Component, pageProps }){
@@ -5,6 +6,8 @@ export default function App({ Component, pageProps }){
     <>
     <Navbar/>
     <Component {...pageProps} />
+    <Analytics/>
     </>
   );
 }
+
