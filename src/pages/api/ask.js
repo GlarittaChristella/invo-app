@@ -1,18 +1,19 @@
 import axios from 'axios';
-import { db } from '../../firebase'; // ✅ Firestore DB
+import { db } from '../../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 export default async function handler(req, res) {
   const { question } = req.body;
 
-  console.log("📥 Question:", question);
-  console.log("🔑 Gemini Key:", process.env.GEMINI_API_KEY);
+  console.log("📥 Incoming question:", question);
 
+  // 🔐 Validate API Key
   if (!process.env.GEMINI_API_KEY) {
-    return res.status(500).json({ error: "Missing GEMINI_API_KEY" });
+    console.error("❌ Missing GEMINI_API_KEY");
+    return res.status(500).json({ error: "Missing GEMINI_API_KEY in .env.local" });
   }
 
-  // 🧠 Step 1: Sample Inventory (you can fetch this from Firestore in future)
+  // 🧾 Step 1: (Optional) Static inventory data — replace with Firestore later
   const inventory = [
     { name: "Rice Bag", quantity: 5, price: 44 },
     { name: "Milk Powder", quantity: 56, price: null },
@@ -20,29 +21,29 @@ export default async function handler(req, res) {
     { name: "Oil Tin", quantity: 20, price: 120 },
   ];
 
-  // 💡 Step 2: Generate contextual suggestions
-  let suggestions = [];
+  // 💡 Step 2: Generate AI context suggestions
+  const suggestions = [];
 
   inventory.forEach(item => {
     if (item.quantity < 10) {
       suggestions.push(`⚠️ ${item.name} is low on stock. Consider reordering.`);
     }
     if (!item.price) {
-      suggestions.push(`💡 Please add price info for ${item.name}.`);
+      suggestions.push(`💡 Price information is missing for ${item.name}.`);
     }
   });
 
-  // 📝 Step 3: Merge suggestion with user question
-  const enhancedPrompt = suggestions.length > 0
-    ? `Before answering, consider these inventory notes:\n${suggestions.join('\n')}\n\nNow answer this:\n${question}`
+  // 🧠 Step 3: Create enhanced prompt for Gemini
+  const prompt = suggestions.length > 0
+    ? `Before answering the following question, consider this inventory context:\n${suggestions.join('\n')}\n\nUser Question:\n${question}`
     : question;
 
-  // 🚀 Step 4: Call Gemini API
   try {
-    const response = await axios.post(
+    // 🚀 Step 4: Call Gemini API
+    const geminiResponse = await axios.post(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
-        contents: [{ parts: [{ text: enhancedPrompt }] }],
+        contents: [{ parts: [{ text: prompt }] }],
         generationConfig: {
           temperature: 0.7,
           topK: 40,
@@ -52,19 +53,25 @@ export default async function handler(req, res) {
       }
     );
 
-    const text = response.data?.candidates?.[0]?.content?.parts?.[0]?.text;
-    console.log("📤 Gemini Response:", text);
+    const answer = geminiResponse.data?.candidates?.[0]?.content?.parts?.[0]?.text || "No response from Gemini";
 
-    // 💾 Step 5: Save to Firestore
-    await addDoc(collection(db, 'aiChats'), {
+    console.log("🤖 Gemini Answer:", answer);
+
+    // 💾 Step 5: Save Q&A to Firestore
+    await addDoc(collection(db, 'chatHistory'), {
       question,
-      answer: text || "No response from Gemini",
+      answer,
       createdAt: serverTimestamp()
     });
 
-    res.status(200).json({ answer: text || "No response from Gemini" });
+    // ✅ Step 6: Return to frontend
+    res.status(200).json({ answer });
+
   } catch (error) {
     console.error("🔥 Gemini API Error:", error.response?.data || error.message);
     res.status(500).json({ error: "Gemini API call failed" });
   }
 }
+
+
+  
